@@ -3,6 +3,7 @@ DELIMITER //
 CREATE PROCEDURE spGetAllAllergenen()
 BEGIN
     SELECT 
+        p.Id AS Id,
         p.Naam AS ProductNaam,
         a.Naam AS AllergeenNaam,
         a.Omschrijving AS AllergeenOmschrijving,
