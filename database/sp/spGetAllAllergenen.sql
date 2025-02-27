@@ -15,7 +15,9 @@ BEGIN
     INNER JOIN 
         allergeen a ON pa.AllergeenId = a.Id
     INNER JOIN 
-        magazijn m ON p.Id = m.ProductId;
+        magazijn m ON p.Id = m.ProductId
+    ORDER BY 
+        p.Naam ASC;
 END //
 
 DELIMITER ;

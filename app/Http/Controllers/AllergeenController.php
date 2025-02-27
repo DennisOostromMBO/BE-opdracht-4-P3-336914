@@ -33,13 +33,12 @@ class AllergeenController extends Controller
      */
     public function show($id)
     {
-        $data = DB::select('CALL spGetAllContact()');
-        $item = collect($data)->firstWhere('Id', $id);
+        $contact = DB::select("CALL spGetAllContact(?)", [$id]);
 
-        if (!$item) {
-            abort(404);
+        if (empty($contact)) {
+            return view('allergenen.show')->with('message', 'Er zijn geen adresgegevens bekend');
         }
 
-        return view('allergenen.show', compact('item'));
+        return view('allergenen.show')->with('item', $contact[0]);
     }
 }

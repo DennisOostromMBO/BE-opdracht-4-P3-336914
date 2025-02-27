@@ -1,6 +1,6 @@
 DELIMITER //
 
-CREATE PROCEDURE spGetAllContact()
+CREATE PROCEDURE spGetAllContact(IN productId INT)
 BEGIN
     SELECT 
         LEVE.Naam AS LeverancierNaam,
@@ -10,9 +10,17 @@ BEGIN
         CONT.Postcode AS Postcode,
         CONT.Stad AS Stad
     FROM 
-        leverancier LEVE
+        product p
     INNER JOIN 
-        contact CONT ON LEVE.Id = CONT.Id;
+        productperleverancier ppl ON p.Id = ppl.ProductId
+    INNER JOIN 
+        leverancier LEVE ON ppl.LeverancierId = LEVE.Id
+    INNER JOIN 
+        contact CONT ON LEVE.Id = CONT.Id
+    WHERE 
+        p.Id = productId
+        AND CONT.Straat IS NOT NULL
+    LIMIT 1;
 END //
 
 DELIMITER ;

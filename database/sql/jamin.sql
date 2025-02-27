@@ -26,13 +26,15 @@ SET time_zone = "+00:00";
 --
 
 DELIMITER $$
+
 --
 -- Procedures
 --
-DROP PROCEDURE IF EXISTS `spGetAllAllergenen`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `spGetAllAllergenen` ()   BEGIN
+
+CREATE PROCEDURE spGetAllAllergenen()
+BEGIN
     SELECT 
-        p.Id,  
+        p.Id AS Id,
         p.Naam AS ProductNaam,
         a.Naam AS AllergeenNaam,
         a.Omschrijving AS AllergeenOmschrijving,
@@ -44,7 +46,31 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `spGetAllAllergenen` ()   BEGIN
     INNER JOIN 
         allergeen a ON pa.AllergeenId = a.Id
     INNER JOIN 
-        magazijn m ON p.Id = m.ProductId;
+        magazijn m ON p.Id = m.ProductId
+    ORDER BY 
+        p.Naam ASC;
+END$$
+
+CREATE PROCEDURE spGetAllContact(IN productId INT)
+BEGIN
+    SELECT 
+        LEVE.Naam AS LeverancierNaam,
+        LEVE.ContactPersoon AS ContactPersoon,
+        CONT.Straat AS StraatNaam,
+        CONT.Huisnummer AS HuisNummer,
+        CONT.Postcode AS Postcode,
+        CONT.Stad AS Stad
+    FROM 
+        product p
+    INNER JOIN 
+        productperleverancier ppl ON p.Id = ppl.ProductId
+    INNER JOIN 
+        leverancier LEVE ON ppl.LeverancierId = LEVE.Id
+    INNER JOIN 
+        contact CONT ON LEVE.ContactId = CONT.Id
+    WHERE 
+        p.Id = productId
+    LIMIT 1;
 END$$
 
 DELIMITER ;
@@ -239,6 +265,7 @@ CREATE TABLE IF NOT EXISTS `leverancier` (
   `Opmerking` varchar(255) DEFAULT NULL,
   `DatumAangemaakt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   `DatumGewijzigd` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  `ContactId` INT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -246,12 +273,14 @@ CREATE TABLE IF NOT EXISTS `leverancier` (
 -- Gegevens worden geëxporteerd voor tabel `leverancier`
 --
 
-INSERT INTO `leverancier` (`Id`, `Naam`, `ContactPersoon`, `LeverancierNummer`, `Mobiel`, `IsActief`, `Opmerking`, `DatumAangemaakt`, `DatumGewijzigd`) VALUES
-(1, 'Venco', 'Bert van Linge', 'L1029384719', '06-28493827', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220'),
-(2, 'Astra Sweets', 'Jasper del Monte', 'L1029284315', '06-39398734', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220'),
-(3, 'Haribo', 'Sven Stalman', 'L1029324748', '06-24383291', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220'),
-(4, 'Basset', 'Joyce Stelterberg', 'L1023845773', '06-48293823', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220'),
-(5, 'De Bron', 'Remco Veenstra', 'L1023857736', '06-34291234', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220');
+INSERT INTO `leverancier` (`Id`, `Naam`, `ContactPersoon`, `LeverancierNummer`, `Mobiel`, `IsActief`, `Opmerking`, `DatumAangemaakt`, `DatumGewijzigd`, `ContactId`) VALUES
+(1, 'Venco', 'Bert van Linge', 'L1029384719', '06-28493827', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220', 1),
+(2, 'Astra Sweets', 'Jasper del Monte', 'L1029284315', '06-39398734', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220', 2),
+(3, 'Haribo', 'Sven Stalman', 'L1029324748', '06-24383291', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220', 3),
+(4, 'Basset', 'Joyce Stelterberg', 'L1023845773', '06-48293823', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220', 4),
+(5, 'De Bron', 'Remco Veenstra', 'L1023857736', '06-34291234', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220', 5),
+(6, 'Quality Street', 'Johan Nooij', 'L1029234586', '06-23458456', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220', 6),
+(7, 'Hom Ken Food', 'Hom Ken', 'L1029234599', '06-23458477', b'1', NULL, '2024-11-13 19:30:05.345220', '2024-11-13 19:30:05.345220', NULL);
 
 -- --------------------------------------------------------
 
@@ -452,6 +481,11 @@ INSERT INTO `productperleverancier` (`Id`, `LeverancierId`, `ProductId`, `DatumL
 (16, 5, 12, '2024-10-11', 45, '0000-00-00', b'1', NULL, '2024-11-13 19:30:05.403839', '2024-11-13 19:30:05.403839'),
 (17, 5, 13, '2024-10-12', 23, '0000-00-00', b'1', NULL, '2024-11-13 19:30:05.403839', '2024-11-13 19:30:05.403839'),
 (18, 1, 14, '2024-10-12', 25, '2024-10-19', b'1', NULL, '2024-11-13 19:30:05.403839', '2024-11-13 19:30:05.403839');
+
+-- Wijzig de leverancier voor product 14
+UPDATE productperleverancier 
+SET LeverancierId = 7
+WHERE ProductId = 14;
 
 -- --------------------------------------------------------
 
